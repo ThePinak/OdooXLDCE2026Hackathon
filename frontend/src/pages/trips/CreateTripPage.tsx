@@ -28,8 +28,8 @@ export const CreateTripPage = () => {
       navigate(`/trips/${data.id}/builder`);
     },
     onError: (err: any) => {
-      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
-        console.warn('Backend not reachable, mocking trip creation.');
+      if (!err.response) {
+        console.warn('Backend not reachable (timeout/network error), mocking trip creation.');
         queryClient.invalidateQueries({ queryKey: ['trips'] });
         navigate(`/trips/mock-trip-id/builder`);
         return;

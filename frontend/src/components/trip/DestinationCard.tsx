@@ -1,63 +1,46 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import type { City } from '@/types';
+import { Card } from '@/components/ui/Card';
 
 interface DestinationCardProps {
   city: City;
-  onClick?: () => void;
   className?: string;
+  onClick?: () => void;
   actionButton?: React.ReactNode;
 }
 
 export const DestinationCard: React.FC<DestinationCardProps> = ({ 
   city, 
-  onClick, 
-  className,
+  className, 
+  onClick,
   actionButton 
 }) => {
   return (
-    <div 
+    <Card 
+      className={cn(`group relative overflow-hidden p-0 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-primary/30 border border-white/20 h-full w-full ${onClick ? 'cursor-pointer' : ''}`, className)}
       onClick={onClick}
-      className={cn(
-        "relative rounded-xl overflow-hidden group cursor-pointer aspect-[4/3] shadow-soft",
-        className
-      )}
     >
-      {/* Background Image */}
-      {city.imageUrl ? (
-        <img 
-          src={city.imageUrl} 
-          alt={city.name} 
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-      ) : (
-        <div className="absolute inset-0 w-full h-full bg-gray-200 flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
-          <span className="text-gray-400">No Image</span>
-        </div>
-      )}
-
-      {/* Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80" />
-
-      {/* Content */}
-      <div className="absolute bottom-0 left-0 p-4 w-full flex justify-between items-end">
+      <img 
+        src={city.imageUrl || 'https://images.unsplash.com/photo-1469854523086-cc02fe5d8800'} 
+        alt={city.name}
+        className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+      
+      <div className="absolute bottom-0 left-0 w-full p-6 flex justify-between items-end">
         <div>
-          <h3 className="text-white font-bold text-lg">{city.name}</h3>
-          <p className="text-gray-300 text-sm">{city.country}</p>
+          <h3 className="text-2xl sm:text-3xl font-bold font-heading text-white group-hover:text-primary transition-colors drop-shadow-lg">
+            {city.name}
+          </h3>
+          <p className="text-white/90 text-sm mt-1 font-medium drop-shadow-md">{city.country}</p>
         </div>
-        
-        {/* Optional Action Button (e.g., 'Add' button that appears on hover) */}
         {actionButton && (
-          <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+          <div className="shrink-0 ml-2">
             {actionButton}
           </div>
         )}
       </div>
-
-      {/* Cost Index Badge */}
-      <div className="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-textPrimary text-xs font-bold px-2 py-1 rounded-md shadow-sm">
-        {'$'.repeat(city.costIndex || 1)}
-      </div>
-    </div>
+    </Card>
   );
 };

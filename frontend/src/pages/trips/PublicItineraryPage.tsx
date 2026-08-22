@@ -23,7 +23,7 @@ export const PublicItineraryPage = () => {
         const res = await apiClient.get(`/share/${slug}`);
         return res.data;
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
           // If offline, pretend we found a shared trip
           return {
              id: slug,
@@ -57,7 +57,7 @@ export const PublicItineraryPage = () => {
         const res = await apiClient.post(`/share/${slug}/copy`);
         return res.data;
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            // Mock copy
            return { id: 'new-copied-trip' };
         }

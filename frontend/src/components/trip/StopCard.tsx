@@ -22,11 +22,21 @@ export const StopCard: React.FC<StopCardProps> = ({
   const endDate = new Date(stop.endDate);
 
   return (
-    <div className="bg-surface rounded-2xl shadow-soft border border-border overflow-hidden flex flex-col">
-      {/* Stop Header */}
-      <div className="p-6 border-b border-border bg-gradient-to-r from-background to-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-start gap-4">
-          <div className="w-16 h-16 shrink-0 rounded-xl overflow-hidden bg-gray-200 border-2 border-white shadow-sm">
+    <div className="relative pl-8 sm:pl-12 pb-12">
+      {/* Timeline vertical line */}
+      <div className="absolute left-[15px] sm:left-[23px] top-8 bottom-0 w-0.5 bg-gradient-to-b from-primary/50 to-primary/10" />
+      
+      {/* Timeline dot */}
+      <div className="absolute left-[11px] sm:left-[19px] top-6 w-2.5 h-2.5 rounded-full bg-primary shadow-[0_0_10px_rgba(255,107,74,0.8)]" />
+
+      <div className="bg-surface/80 backdrop-blur-xl rounded-2xl shadow-xl border border-white/20 dark:border-white/10 overflow-hidden flex flex-col transition-all duration-300 hover:shadow-primary/5">
+        {/* Stop Header */}
+        <div className="p-6 border-b border-white/10 bg-gradient-to-r from-background/50 to-surface flex flex-col sm:flex-row sm:items-center justify-between gap-4 relative overflow-hidden">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 left-0 w-full h-full bg-primary/5 mix-blend-overlay pointer-events-none" />
+          
+          <div className="flex items-start gap-5 relative z-10">
+            <div className="w-20 h-20 shrink-0 rounded-2xl overflow-hidden bg-gray-200 border border-white/20 shadow-md transform -rotate-3 transition-transform hover:rotate-0 duration-300">
             {stop.city?.imageUrl ? (
               <img src={stop.city.imageUrl} alt={stop.city.name} className="w-full h-full object-cover" />
             ) : (
@@ -96,6 +106,7 @@ export const StopCard: React.FC<StopCardProps> = ({
             </Button>
           </div>
         )}
+      </div>
       </div>
     </div>
   );

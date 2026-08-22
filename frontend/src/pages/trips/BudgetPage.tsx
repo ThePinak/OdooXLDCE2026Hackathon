@@ -17,8 +17,15 @@ export const BudgetPage = () => {
   const { data: trip, isLoading: isLoadingTrip } = useQuery<Trip>({
     queryKey: ['trip', id],
     queryFn: async () => {
-      const res = await apiClient.get(`/trips/${id}`);
-      return res.data;
+      try {
+        const res = await apiClient.get(`/trips/${id}`);
+        return res.data;
+      } catch (err: any) {
+        if (!err.response) {
+          return { name: 'Mocked Trip (Backend Offline)', stops: [] };
+        }
+        throw err;
+      }
     },
     retry: 1,
   });
@@ -59,7 +66,7 @@ export const BudgetPage = () => {
         const res = await apiClient.get(`/trips/${id}/budget`);
         return res.data;
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            return computedBudget;
         }
         throw err;

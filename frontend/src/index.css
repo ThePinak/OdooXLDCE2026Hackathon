@@ -1,39 +1,72 @@
 @import "tailwindcss";
 
 @theme {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
   --color-background: var(--bg);
   --color-surface: var(--surface);
-  --color-border: var(--border-color);
-  --color-primary: #FF6B4A;
-  --color-secondary: #0EA5E9;
+  --color-border: var(--border);
   --color-textPrimary: var(--text-primary);
   --color-textSecondary: var(--text-secondary);
-  --color-success: #16A34A;
-  --color-warning: #F59E0B;
+  
+  --font-sans: 'Inter', sans-serif;
+  --font-heading: 'Outfit', sans-serif;
+  
   --radius-xl: 0.75rem;
   --shadow-soft: var(--shadow-soft-val);
 }
 
-@layer base {
-  :root {
-    --bg: #F9FAFB; /* gray-50 equivalent for background */
-    --surface: #FFFFFF;
-    --border-color: #E5E7EB;
-    --text-primary: #111827;
-    --text-secondary: #6B7280;
-    --shadow-soft-val: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-  }
+:root {
+  --primary: #FF6B4A;
+  --secondary: #0EA5E9;
   
-  .dark {
-    --bg: #111827; /* gray-900 equivalent */
-    --surface: #1F2937; /* gray-800 equivalent */
-    --border-color: #374151; /* gray-700 equivalent */
-    --text-primary: #F9FAFB;
-    --text-secondary: #9CA3AF;
-    --shadow-soft-val: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
-  }
+  /* Light mode colors */
+  --bg: #ffffff;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --shadow-soft-val: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
 
-  body {
-    @apply bg-background text-textPrimary antialiased selection:bg-primary/20 transition-colors duration-200;
-  }
+.dark {
+  /* Dark mode colors */
+  --bg: #0f172a;
+  --surface: #1e293b;
+  --border: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --shadow-soft-val: 0 4px 20px -2px rgba(0, 0, 0, 0.3);
+}
+
+body {
+  background-color: var(--bg);
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(255, 107, 74, 0.03) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(14, 165, 233, 0.03) 0px, transparent 50%);
+  background-attachment: fixed;
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background-color: var(--border);
+  border-radius: 10px;
+}
+.custom-scrollbar:hover::-webkit-scrollbar-thumb {
+  background-color: var(--text-secondary);
 }

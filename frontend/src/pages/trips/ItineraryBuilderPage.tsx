@@ -27,7 +27,7 @@ export const ItineraryBuilderPage = () => {
         const res = await apiClient.get(`/trips/${id}`);
         return res.data;
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
           return {
              id,
              name: 'Mocked Trip (Backend Offline)',
@@ -55,7 +55,7 @@ export const ItineraryBuilderPage = () => {
         });
         return res.data;
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            // Mock Add
            const mockStop: Stop = {
              id: uuidv4(),
@@ -87,7 +87,7 @@ export const ItineraryBuilderPage = () => {
       try {
         await apiClient.delete(`/stops/${stopId}`);
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            return stopId;
         }
         throw err;
@@ -110,7 +110,7 @@ export const ItineraryBuilderPage = () => {
         });
         return { stopId, stopActivity: res.data };
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            const mockStopActivity: StopActivity = {
              id: uuidv4(),
              stopId: stopId,
@@ -145,7 +145,7 @@ export const ItineraryBuilderPage = () => {
       try {
         await apiClient.delete(`/stop-activities/${stopActivityId}`);
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            return stopActivityId; // mock success
         }
         throw err;
@@ -220,7 +220,7 @@ export const ItineraryBuilderPage = () => {
             </div>
             
             <div className="flex items-center gap-3 shrink-0">
-              <Button variant="secondary" onClick={() => navigate(`/trips/${id}`)}>
+              <Button variant="secondary" onClick={() => navigate(`/share/${id}`)}>
                 Preview
               </Button>
               <Button onClick={() => navigate(`/trips/${id}/budget`)}>

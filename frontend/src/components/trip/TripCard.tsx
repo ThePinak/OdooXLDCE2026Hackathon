@@ -19,19 +19,19 @@ export const TripCard: React.FC<TripCardProps> = ({ trip, onDelete, showActions 
   const stopCount = trip._count?.stops || trip.stops?.length || 0;
 
   return (
-    <Card className="hover:shadow-lg transition-shadow duration-300 group flex flex-col justify-between h-full p-0 overflow-hidden">
-      <Link to={`/trips/${trip.id}`} className="block flex-grow cursor-pointer">
-        <div className="relative h-40 w-full bg-gray-200 overflow-hidden">
+    <Card className="hover:-translate-y-1 hover:shadow-2xl hover:shadow-primary/20 transition-all duration-300 group flex flex-col justify-between h-full p-0 overflow-hidden bg-surface/60 backdrop-blur-md border border-white/20">
+      <Link to={`/trips/${trip.id}/builder`} className="block flex-grow cursor-pointer relative">
+        <div className="relative h-48 w-full bg-gray-200 overflow-hidden">
           <img 
             src={trip.coverImageUrl || `https://images.unsplash.com/photo-[RANDOM_ID]?auto=format&fit=crop&q=80&w=800`.replace('[RANDOM_ID]', ['1503899036084-c55cdd92da26', '1502602898657-3e90760b6164', '1537996194471-e657df975ab4', '1493976040374-85c8e12f0c0e'][Math.floor(Math.random() * 4)])} 
             alt={trip.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
         </div>
         
-        <div className="p-6">
-          <h3 className="text-xl font-bold text-textPrimary group-hover:text-primary transition-colors mb-2 line-clamp-2">
+        <div className="p-6 relative z-10 -mt-8">
+          <h3 className="text-2xl font-bold font-heading text-white group-hover:text-primary transition-colors mb-2 line-clamp-2 drop-shadow-md">
             {trip.name}
           </h3>
         

@@ -1,12 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { motion } from 'framer-motion';
-import { PlusCircle, Compass } from 'lucide-react';
+import { PlusCircle, Compass, Map, LogOut } from 'lucide-react';
 import apiClient from '@/lib/api-client';
 import type { Trip } from '@/types';
 import { Button } from '@/components/ui/Button';
 import { TripCard } from '@/components/trip/TripCard';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { useAuthStore } from '@/store/authStore';
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -24,6 +26,12 @@ const itemVariants = {
 export const MyTripsPage = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { setAuth } = useAuthStore();
+
+  const handleSignOut = () => {
+    setAuth(null, null);
+    navigate('/login');
+  };
 
   const { data: trips = [], isLoading } = useQuery<Trip[]>({
     queryKey: ['trips'],
@@ -32,8 +40,22 @@ export const MyTripsPage = () => {
         const res = await apiClient.get('/trips');
         return res.data;
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
-          return [];
+        if (!err.response) {
+          // Return a beautiful mock trip if the backend is offline
+          return [
+            {
+              id: 'mock-trip-1',
+              name: 'Summer in Japan',
+              startDate: new Date().toISOString(),
+              endDate: new Date(Date.now() + 86400000 * 7).toISOString(),
+              description: 'A 7-day adventure through Tokyo and Kyoto.',
+              coverImageUrl: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&q=80&w=800',
+              isPublic: false,
+              userId: 'mock-user',
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString()
+            }
+          ];
         }
         throw err;
       }
@@ -45,7 +67,7 @@ export const MyTripsPage = () => {
       try {
         await apiClient.delete(`/trips/${id}`);
       } catch (err: any) {
-        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+        if (!err.response) {
            console.warn('Backend not reachable, mocking trip deletion.');
            return;
         }
@@ -64,8 +86,25 @@ export const MyTripsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background pb-12">
+      {/* Sticky Glass Navbar */}
+      <nav className="sticky top-0 z-50 w-full backdrop-blur-xl bg-background/80 border-b border-white/10 dark:border-white/5 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-primary hover:opacity-80 transition-opacity">
+            <Map className="w-6 h-6" />
+            <span className="font-bold font-heading text-xl tracking-tight">GlobeTrotter</span>
+          </Link>
+          <div className="flex items-center gap-4">
+            <ThemeToggle />
+            <Button variant="ghost" onClick={handleSignOut} className="text-textSecondary hover:text-red-500">
+              <LogOut className="w-4 h-4 mr-1.5" />
+              <span className="hidden sm:inline">Sign out</span>
+            </Button>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-12">
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
             <h1 className="text-3xl font-bold text-textPrimary flex items-center gap-2">
