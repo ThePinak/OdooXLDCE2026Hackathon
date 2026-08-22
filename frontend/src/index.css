@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: var(--bg);
+  --color-surface: var(--surface);
+  --color-border: var(--border-color);
+  --color-primary: #FF6B4A;
+  --color-secondary: #0EA5E9;
+  --color-textPrimary: var(--text-primary);
+  --color-textSecondary: var(--text-secondary);
+  --color-success: #16A34A;
+  --color-warning: #F59E0B;
+  --radius-xl: 0.75rem;
+  --shadow-soft: var(--shadow-soft-val);
+}
+
+@layer base {
+  :root {
+    --bg: #F9FAFB; /* gray-50 equivalent for background */
+    --surface: #FFFFFF;
+    --border-color: #E5E7EB;
+    --text-primary: #111827;
+    --text-secondary: #6B7280;
+    --shadow-soft-val: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  }
+  
+  .dark {
+    --bg: #111827; /* gray-900 equivalent */
+    --surface: #1F2937; /* gray-800 equivalent */
+    --border-color: #374151; /* gray-700 equivalent */
+    --text-primary: #F9FAFB;
+    --text-secondary: #9CA3AF;
+    --shadow-soft-val: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  }
+
+  body {
+    @apply bg-background text-textPrimary antialiased selection:bg-primary/20 transition-colors duration-200;
+  }
+}
