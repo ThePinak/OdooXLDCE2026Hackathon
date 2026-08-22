@@ -3,7 +3,7 @@
 Welcome to the **GlobeTrotter** backend repository! This is the powerhouse behind the collaborative travel planning platform. It manages user authentication, multi-city itineraries, budget tracking, and features an integrated Google Gemini AI for automated trip generation.
 
 
-## 🚀 Tech Stack
+## Tech Stack
 
 - **Runtime Environment:** Node.js (v22+)
 - **Framework:** Express.js (v5)
@@ -16,7 +16,7 @@ Welcome to the **GlobeTrotter** backend repository! This is the powerhouse behin
 
 ---
 
-## ✨ Features Implemented
+## Features Implemented
 
 1. **Secure Authentication**
    - JWT-protected routes with password hashing.
@@ -28,7 +28,7 @@ Welcome to the **GlobeTrotter** backend repository! This is the powerhouse behin
    - Seeded database featuring global cities (Paris, Rome, Tokyo, etc.) and categorized activities via Unsplash API.
    - Powerful search endpoints to filter cities by name/country and activities by category.
    - Ability to assign specific activities to time-slots within trip stops.
-4. **🧠 AI Itinerary Generator**
+4. **AI Itinerary Generator**
    - Integrated Google Gemini AI to automatically generate multi-stop trips based on a single text prompt.
    - Fully contextualized: The AI only selects valid cities and activities from the database and persists them seamlessly.
 5. **Budget Aggregation**
