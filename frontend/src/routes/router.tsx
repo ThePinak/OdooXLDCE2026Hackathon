@@ -7,6 +7,8 @@ import { DashboardPage } from '@/pages/DashboardPage';
 import { MyTripsPage } from '@/pages/trips/MyTripsPage';
 import { CreateTripPage } from '@/pages/trips/CreateTripPage';
 import { ItineraryBuilderPage } from '@/pages/trips/ItineraryBuilderPage';
+import { BudgetPage } from '@/pages/trips/BudgetPage';
+import { PublicItineraryPage } from '@/pages/trips/PublicItineraryPage';
 
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -51,9 +53,12 @@ export const router = createBrowserRouter([
     path: '/trips/:id/builder', 
     element: <ProtectedRoute><ItineraryBuilderPage /></ProtectedRoute> 
   },
-  // Future routes (Phase 5, etc.):
-  // { path: '/trips/:id', element: <ProtectedRoute><ItineraryViewPage /></ProtectedRoute> },
-  // { path: '/trips/:id/budget', element: <ProtectedRoute><BudgetPage /></ProtectedRoute> },
-  // { path: '/share/:slug', element: <PublicItineraryPage /> },
-  // { path: '/profile', element: <ProtectedRoute><ProfilePage /></ProtectedRoute> },
+  { 
+    path: '/trips/:id/budget', 
+    element: <ProtectedRoute><BudgetPage /></ProtectedRoute> 
+  },
+  { 
+    path: '/share/:slug', 
+    element: <PublicItineraryPage /> 
+  },
 ]);

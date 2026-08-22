@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
-import { PlusCircle, Compass } from 'lucide-react';
+import { PlusCircle, Compass, LogOut } from 'lucide-react';
 import { useAuthStore } from '@/store/authStore';
 import apiClient from '@/lib/api-client';
 import type { Trip, City } from '@/types';
@@ -10,8 +10,13 @@ import { TripCard } from '@/components/trip/TripCard';
 import { DestinationCard } from '@/components/trip/DestinationCard';
 
 export const DashboardPage = () => {
-  const { user } = useAuthStore();
+  const { user, setAuth } = useAuthStore();
   const navigate = useNavigate();
+
+  const handleSignOut = () => {
+    setAuth(null, null);
+    navigate('/login');
+  };
 
   const { data: trips = [], isLoading: isLoadingTrips } = useQuery<Trip[]>({
     queryKey: ['trips'],
@@ -72,10 +77,16 @@ export const DashboardPage = () => {
               Where to next? Start planning your next adventure.
             </p>
           </div>
-          <Button onClick={() => navigate('/trips/new')} className="shrink-0 gap-2">
-            <PlusCircle className="w-5 h-5" />
-            Plan New Trip
-          </Button>
+          <div className="flex items-center gap-3 shrink-0">
+            <Button variant="ghost" onClick={handleSignOut} className="text-textSecondary hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20">
+              <LogOut className="w-4 h-4 mr-1.5" />
+              Sign out
+            </Button>
+            <Button onClick={() => navigate('/trips/new')} className="gap-2">
+              <PlusCircle className="w-4 h-4" />
+              Plan New Trip
+            </Button>
+          </div>
         </div>
       </div>
 

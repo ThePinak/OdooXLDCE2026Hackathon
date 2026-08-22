@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { format } from 'date-fns';
-import { Calendar, MapPin, Edit3, Trash2 } from 'lucide-react';
+import { Calendar, MapPin, Edit3, Trash2, Share2, CheckCircle2 } from 'lucide-react';
 import type { Trip } from '@/types';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -13,6 +13,7 @@ interface TripCardProps {
 }
 
 export const TripCard: React.FC<TripCardProps> = ({ trip, onDelete, showActions = false }) => {
+  const [isCopied, setIsCopied] = React.useState(false);
   const startDate = new Date(trip.startDate);
   const endDate = new Date(trip.endDate);
   const stopCount = trip._count?.stops || trip.stops?.length || 0;
@@ -51,6 +52,21 @@ export const TripCard: React.FC<TripCardProps> = ({ trip, onDelete, showActions 
 
       {showActions && (
         <div className="mt-6 pt-4 border-t border-border flex items-center justify-end gap-2">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-8 px-2 text-textSecondary hover:text-primary"
+            onClick={() => {
+              // Mock share URL generation
+              const shareUrl = `${window.location.origin}/share/${trip.id}`;
+              navigator.clipboard.writeText(shareUrl);
+              setIsCopied(true);
+              setTimeout(() => setIsCopied(false), 2000);
+            }}
+          >
+            {isCopied ? <CheckCircle2 className="w-4 h-4 mr-1 text-green-500" /> : <Share2 className="w-4 h-4 mr-1" />}
+            {isCopied ? 'Copied' : 'Share'}
+          </Button>
           <Link to={`/trips/${trip.id}/builder`}>
             <Button variant="ghost" size="sm" className="h-8 px-2 text-textSecondary hover:text-primary">
               <Edit3 className="w-4 h-4 mr-1" /> Edit

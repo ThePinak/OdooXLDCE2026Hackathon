@@ -1,15 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { ArrowLeft, Calendar, MapPin, Plus } from 'lucide-react';
 import { format } from 'date-fns';
+import { v4 as uuidv4 } from 'uuid';
 import apiClient from '@/lib/api-client';
-import type { Trip } from '@/types';
+import type { Trip, City, Activity, Stop, StopActivity } from '@/types';
 import { Button } from '@/components/ui/Button';
+import { StopCard } from '@/components/trip/StopCard';
+import { CitySearchModal } from '@/components/trip/CitySearchModal';
+import { ActivitySearchModal } from '@/components/trip/ActivitySearchModal';
+import { AIPromptGenerator } from '@/components/trip/AIPromptGenerator';
 
 export const ItineraryBuilderPage = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [isCityModalOpen, setIsCityModalOpen] = useState(false);
+  const [activityModalContext, setActivityModalContext] = useState<{ stopId: string, cityId: string } | null>(null);
 
   const { data: trip, isLoading, error } = useQuery<Trip>({
     queryKey: ['trip', id],
@@ -33,6 +42,127 @@ export const ItineraryBuilderPage = () => {
     },
     enabled: !!id,
     retry: 1,
+  });
+
+  // Add Stop Mutation
+  const addStopMutation = useMutation({
+    mutationFn: async (city: City) => {
+      try {
+        const res = await apiClient.post(`/trips/${id}/stops`, {
+          cityId: city.id,
+          startDate: trip?.startDate,
+          endDate: trip?.endDate
+        });
+        return res.data;
+      } catch (err: any) {
+        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+           // Mock Add
+           const mockStop: Stop = {
+             id: uuidv4(),
+             tripId: id!,
+             cityId: city.id,
+             startDate: trip?.startDate || new Date().toISOString(),
+             endDate: trip?.endDate || new Date().toISOString(),
+             orderIndex: trip?.stops?.length || 0,
+             city: city,
+             activities: []
+           };
+           return mockStop;
+        }
+        throw err;
+      }
+    },
+    onSuccess: (newStop) => {
+      setIsCityModalOpen(false);
+      queryClient.setQueryData<Trip>(['trip', id], (old) => {
+        if (!old) return old;
+        return { ...old, stops: [...(old.stops || []), newStop] };
+      });
+    }
+  });
+
+  // Remove Stop Mutation
+  const removeStopMutation = useMutation({
+    mutationFn: async (stopId: string) => {
+      try {
+        await apiClient.delete(`/stops/${stopId}`);
+      } catch (err: any) {
+        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+           return stopId;
+        }
+        throw err;
+      }
+    },
+    onSuccess: (_, stopId) => {
+      queryClient.setQueryData<Trip>(['trip', id], (old) => {
+        if (!old) return old;
+        return { ...old, stops: old.stops?.filter(s => s.id !== stopId) };
+      });
+    }
+  });
+
+  // Add Activity Mutation
+  const addActivityMutation = useMutation({
+    mutationFn: async ({ stopId, activity }: { stopId: string, activity: Activity }) => {
+      try {
+        const res = await apiClient.post(`/stops/${stopId}/activities`, {
+          activityId: activity.id
+        });
+        return { stopId, stopActivity: res.data };
+      } catch (err: any) {
+        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+           const mockStopActivity: StopActivity = {
+             id: uuidv4(),
+             stopId: stopId,
+             activityId: activity.id,
+             dayNumber: null,
+             timeSlot: null,
+             activity: activity
+           };
+           return { stopId, stopActivity: mockStopActivity };
+        }
+        throw err;
+      }
+    },
+    onSuccess: (data) => {
+      setActivityModalContext(null);
+      queryClient.setQueryData<Trip>(['trip', id], (old) => {
+        if (!old) return old;
+        const newStops = old.stops?.map(stop => {
+          if (stop.id === data.stopId) {
+            return { ...stop, activities: [...(stop.activities || []), data.stopActivity] };
+          }
+          return stop;
+        });
+        return { ...old, stops: newStops };
+      });
+    }
+  });
+
+  // Remove Activity Mutation
+  const removeActivityMutation = useMutation({
+    mutationFn: async (stopActivityId: string) => {
+      try {
+        await apiClient.delete(`/stop-activities/${stopActivityId}`);
+      } catch (err: any) {
+        if (err.message === 'Network Error' || err.code === 'ERR_NETWORK') {
+           return stopActivityId; // mock success
+        }
+        throw err;
+      }
+    },
+    onSuccess: (_, stopActivityId) => {
+      queryClient.setQueryData<Trip>(['trip', id], (old) => {
+        if (!old) return old;
+        const newStops = old.stops?.map(stop => {
+          return {
+            ...stop,
+            activities: stop.activities?.filter(a => a.id !== stopActivityId)
+          };
+        });
+        return { ...old, stops: newStops };
+      });
+    }
   });
 
   if (isLoading) {
@@ -104,8 +234,7 @@ export const ItineraryBuilderPage = () => {
       {/* Main Content Area */}
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         
-        {/* Placeholder for AI Prompt Generator (Phase 4) */}
-        {/* <PromptInputBox /> */}
+        <AIPromptGenerator trip={trip} />
 
         {/* Stops List */}
         <div className="space-y-6">
@@ -114,15 +243,27 @@ export const ItineraryBuilderPage = () => {
               <MapPin className="w-5 h-5 text-primary" />
               Itinerary Stops
             </h2>
+            {trip.stops && trip.stops.length > 0 && (
+              <Button size="sm" onClick={() => setIsCityModalOpen(true)} className="gap-1.5">
+                <Plus className="w-4 h-4" /> Add Destination
+              </Button>
+            )}
           </div>
           
           {trip.stops && trip.stops.length > 0 ? (
-            <div className="space-y-6">
-              {/* Phase 3: Map through trip.stops and render StopCard components */}
+            <div className="space-y-8">
               {trip.stops.map(stop => (
-                <div key={stop.id} className="p-6 bg-surface rounded-xl shadow-soft border border-border">
-                  Stop placeholder for {stop.city?.name}
-                </div>
+                <StopCard 
+                  key={stop.id} 
+                  stop={stop}
+                  onAddActivity={(stopId, cityId) => setActivityModalContext({ stopId, cityId })}
+                  onRemoveStop={(stopId) => {
+                    if (window.confirm('Are you sure you want to remove this stop?')) {
+                      removeStopMutation.mutate(stopId);
+                    }
+                  }}
+                  onRemoveActivity={(stopActivityId) => removeActivityMutation.mutate(stopActivityId)}
+                />
               ))}
             </div>
           ) : (
@@ -131,13 +272,33 @@ export const ItineraryBuilderPage = () => {
               <h3 className="text-lg font-medium text-textPrimary">Your trip is empty</h3>
               <p className="mt-1 text-textSecondary mb-6">Add your first destination to start planning.</p>
               
-              <Button className="gap-2">
+              <Button onClick={() => setIsCityModalOpen(true)} className="gap-2">
                 <Plus className="w-4 h-4" /> Add Destination
               </Button>
             </div>
           )}
         </div>
       </div>
+
+      {/* Modals */}
+      <CitySearchModal 
+        isOpen={isCityModalOpen} 
+        onClose={() => setIsCityModalOpen(false)}
+        onSelect={(city) => {
+          addStopMutation.mutate(city);
+        }}
+      />
+
+      <ActivitySearchModal 
+        isOpen={!!activityModalContext}
+        onClose={() => setActivityModalContext(null)}
+        cityId={activityModalContext?.cityId || null}
+        onSelect={(activity) => {
+          if (activityModalContext) {
+            addActivityMutation.mutate({ stopId: activityModalContext.stopId, activity });
+          }
+        }}
+      />
     </div>
   );
 };
