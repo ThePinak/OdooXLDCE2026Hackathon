@@ -1,0 +1,22 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
+
+@theme {
+  --color-brand-deep: #2F7D4A;
+  --color-brand-fresh: #4CAF64;
+  --color-brand-soft: #E8F5EA;
+  --color-brand-mint: #F1F8F2;
+  --color-page-bg: #F8FAF8;
+  --color-brand-dark: #111315;
+  --color-brand-gray: #59635C;
+  --color-brand-muted: #8A938D;
+  
+  --font-sans: "Outfit", system-ui, sans-serif;
+  --shadow-glass: 0 20px 60px rgba(47,125,74,0.08);
+}
+
+@layer base {
+  body {
+    @apply bg-page-bg text-brand-dark antialiased font-sans;
+  }
+}

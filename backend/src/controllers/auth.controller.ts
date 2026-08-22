@@ -44,7 +44,7 @@ export const signup = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const zodError = error as any;
-      return res.status(400).json({ message: zodError.errors[0]?.message || 'Validation error' });
+      return res.status(400).json({ message: zodError.errors?.[0]?.message || zodError.issues?.[0]?.message || 'Validation error' });
     }
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -74,7 +74,7 @@ export const login = async (req: Request, res: Response) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const zodError = error as any;
-      return res.status(400).json({ message: zodError.errors[0]?.message || 'Validation error' });
+      return res.status(400).json({ message: zodError.errors?.[0]?.message || zodError.issues?.[0]?.message || 'Validation error' });
     }
     return res.status(500).json({ message: 'Internal server error' });
   }
@@ -104,8 +104,47 @@ export const updateMe = async (req: AuthRequest, res: Response) => {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const zodError = error as any;
-      return res.status(400).json({ message: zodError.errors[0]?.message || 'Validation error' });
+      return res.status(400).json({ message: zodError.errors?.[0]?.message || zodError.issues?.[0]?.message || 'Validation error' });
     }
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getUserStats = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+
+    const trips = await prisma.trip.findMany({
+      where: { userId: req.user.id },
+      include: {
+        stops: {
+          include: {
+            city: true,
+            activities: { include: { activity: true } }
+          }
+        }
+      }
+    });
+
+    let totalBudget = 0;
+    const countries = new Set();
+
+    trips.forEach((trip: any) => {
+      totalBudget += (trip.flightCost || 0) + (trip.accommodationCost || 0) + (trip.miscCost || 0);
+      trip.stops.forEach((stop: any) => {
+        countries.add(stop.city.country);
+        stop.activities.forEach((act: any) => {
+          totalBudget += act.activity.cost;
+        });
+      });
+    });
+
+    return res.status(200).json({
+      totalTrips: trips.length,
+      countriesVisited: countries.size,
+      totalBudget: totalBudget
+    });
+  } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };

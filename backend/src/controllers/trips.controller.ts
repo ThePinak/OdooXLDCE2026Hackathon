@@ -15,12 +15,16 @@ const updateTripSchema = z.object({
   startDate: z.string().datetime().optional(),
   endDate: z.string().datetime().optional(),
   description: z.string().optional(),
+  flightCost: z.number().nonnegative().optional(),
+  accommodationCost: z.number().nonnegative().optional(),
+  miscCost: z.number().nonnegative().optional(),
 });
 
 export const createTrip = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
     const data = createTripSchema.parse(req.body);
+    const { getRandomImage } = require('../utils/images');
 
     const trip = await prisma.trip.create({
       data: {
@@ -29,6 +33,7 @@ export const createTrip = async (req: AuthRequest, res: Response) => {
         startDate: new Date(data.startDate),
         endDate: new Date(data.endDate),
         description: data.description,
+        coverImageUrl: getRandomImage('city')
       },
     });
 
@@ -53,6 +58,15 @@ export const getTrips = async (req: AuthRequest, res: Response) => {
         _count: {
           select: { stops: true },
         },
+        stops: {
+          select: {
+            city: {
+              select: { imageUrl: true }
+            }
+          },
+          take: 1,
+          orderBy: { orderIndex: 'asc' }
+        }
       },
     });
 
@@ -114,6 +128,9 @@ export const updateTrip = async (req: AuthRequest, res: Response) => {
         startDate: data.startDate ? new Date(data.startDate) : undefined,
         endDate: data.endDate ? new Date(data.endDate) : undefined,
         description: data.description,
+        flightCost: data.flightCost,
+        accommodationCost: data.accommodationCost,
+        miscCost: data.miscCost,
       },
     });
 
@@ -167,8 +184,13 @@ export const getTripBudget = async (req: AuthRequest, res: Response) => {
       return res.status(404).json({ message: 'Trip not found' });
     }
 
-    let totalCost = 0;
-    const byCategoryMap: Record<string, number> = {};
+    let totalCost = trip.flightCost + trip.accommodationCost + trip.miscCost;
+    const byCategoryMap: Record<string, number> = {
+      'Flights': trip.flightCost,
+      'Accommodation': trip.accommodationCost,
+      'Misc': trip.miscCost
+    };
+    
     const byStop: any[] = [];
 
     for (const stop of trip.stops) {
@@ -189,10 +211,12 @@ export const getTripBudget = async (req: AuthRequest, res: Response) => {
       });
     }
 
-    const byCategory = Object.keys(byCategoryMap).map(key => ({
-      category: key,
-      total: byCategoryMap[key]
-    }));
+    const byCategory = Object.keys(byCategoryMap)
+      .filter(key => byCategoryMap[key] > 0)
+      .map(key => ({
+        category: key,
+        total: byCategoryMap[key]
+      }));
 
     return res.status(200).json({ totalCost, byCategory, byStop });
   } catch (error) {
@@ -211,22 +235,23 @@ export const publishTrip = async (req: AuthRequest, res: Response) => {
     }
 
     let slug = trip.publicSlug;
-    if (!slug) {
-      // Generate a simple unique slug
+    if (!slug && !trip.isPublic) {
+      // Generate a simple unique slug if publishing for the first time
       slug = trip.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 8);
     }
 
     const updatedTrip = await prisma.trip.update({
       where: { id },
       data: {
-        isPublic: true,
+        isPublic: !trip.isPublic,
         publicSlug: slug
       }
     });
 
     return res.status(200).json({ 
-      message: 'Trip published successfully',
-      publicSlug: updatedTrip.publicSlug 
+      message: updatedTrip.isPublic ? 'Trip published successfully' : 'Trip made private',
+      publicSlug: updatedTrip.publicSlug,
+      isPublic: updatedTrip.isPublic
     });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });

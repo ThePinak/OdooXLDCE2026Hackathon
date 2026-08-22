@@ -64,6 +64,7 @@ export const copySharedTrip = async (req: AuthRequest, res: Response) => {
         startDate: sharedTrip.startDate,
         endDate: sharedTrip.endDate,
         description: sharedTrip.description,
+        coverImageUrl: sharedTrip.coverImageUrl,
         isPublic: false,
       }
     });
@@ -93,6 +94,23 @@ export const copySharedTrip = async (req: AuthRequest, res: Response) => {
     }
 
     return res.status(201).json({ message: 'Trip copied successfully', tripId: newTrip.id });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const getFeaturedTrips = async (req: Request, res: Response) => {
+  try {
+    const featuredTrips = await prisma.trip.findMany({
+      where: { isPublic: true },
+      take: 4,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: { select: { name: true } },
+        _count: { select: { stops: true } }
+      }
+    });
+    return res.status(200).json(featuredTrips);
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

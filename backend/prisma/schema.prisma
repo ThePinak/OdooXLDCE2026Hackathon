@@ -26,6 +26,9 @@ model Trip {
   description         String?
   coverImageUrl       String?
   generatedFromPrompt String?
+  flightCost          Int      @default(0)
+  accommodationCost   Int      @default(0)
+  miscCost            Int      @default(0)
   isPublic            Boolean  @default(false)
   publicSlug          String?  @unique
   stops               Stop[]

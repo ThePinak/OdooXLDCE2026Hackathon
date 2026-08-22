@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { searchActivities } from '../controllers/activities.controller';
+import { searchActivities, createActivity } from '../controllers/activities.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -8,5 +8,6 @@ const router = Router();
 router.use(authenticateToken as any);
 
 router.get('/', searchActivities as any);
+router.post('/', createActivity as any);
 
 export default router;

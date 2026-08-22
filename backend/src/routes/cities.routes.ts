@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { searchCities } from '../controllers/cities.controller';
+import { searchCities, generateCity } from '../controllers/cities.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -8,5 +8,6 @@ const router = Router();
 router.use(authenticateToken as any);
 
 router.get('/', searchCities as any);
+router.post('/generate', generateCity as any);
 
 export default router;
