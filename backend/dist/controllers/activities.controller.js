@@ -9,11 +9,11 @@ const searchActivities = async (req, res) => {
             return res.status(400).json({ message: 'cityId is required' });
         }
         const whereClause = { cityId };
-        if (category && typeof category === 'string') {
+        if (typeof category === 'string' && category.trim().length > 0) {
             whereClause.category = category;
         }
         const activities = await prisma_1.prisma.activity.findMany({
-            where: whereClause
+            where: whereClause,
         });
         return res.status(200).json(activities);
     }

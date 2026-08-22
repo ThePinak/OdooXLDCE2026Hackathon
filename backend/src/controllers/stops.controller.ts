@@ -15,6 +15,12 @@ const updateStopSchema = z.object({
   orderIndex: z.number().int().optional(),
 });
 
+const addActivitySchema = z.object({
+  activityId: z.string().uuid('Invalid activity ID'),
+  dayNumber: z.number().int().optional(),
+  timeSlot: z.string().optional(),
+});
+
 export const createStop = async (req: AuthRequest, res: Response) => {
   try {
     if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
@@ -110,6 +116,73 @@ export const deleteStop = async (req: AuthRequest, res: Response) => {
 
     await prisma.stop.delete({ where: { id } });
     return res.status(200).json({ message: 'Stop deleted successfully' });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const addActivityToStop = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+    const { id } = req.params as { id: string };
+    const data = addActivitySchema.parse(req.body);
+
+    const stop = await prisma.stop.findUnique({
+      where: { id },
+      include: { trip: true },
+    });
+
+    if (!stop || stop.trip.userId !== req.user.id) {
+      return res.status(404).json({ message: 'Stop not found' });
+    }
+
+    const stopActivity = await prisma.stopActivity.create({
+      data: {
+        stopId: id,
+        activityId: data.activityId,
+        dayNumber: data.dayNumber,
+        timeSlot: data.timeSlot,
+      },
+      include: { activity: true }
+    });
+
+    return res.status(201).json(stopActivity);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const zodError = error as any;
+      return res.status(400).json({ message: zodError.errors[0]?.message || 'Validation error' });
+    }
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const removeActivityFromStop = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+    const { id, activityId } = req.params as { id: string, activityId: string };
+
+    const stop = await prisma.stop.findUnique({
+      where: { id },
+      include: { trip: true },
+    });
+
+    if (!stop || stop.trip.userId !== req.user.id) {
+      return res.status(404).json({ message: 'Stop not found' });
+    }
+
+    // Delete by stopId and activityId - wait, stopActivity doesn't have a compound unique key in schema
+    // Let's delete the first one that matches
+    const stopActivity = await prisma.stopActivity.findFirst({
+      where: { stopId: id, activityId }
+    });
+
+    if (!stopActivity) {
+      return res.status(404).json({ message: 'Activity not found in this stop' });
+    }
+
+    await prisma.stopActivity.delete({ where: { id: stopActivity.id } });
+    
+    return res.status(200).json({ message: 'Activity removed from stop' });
   } catch (error) {
     return res.status(500).json({ message: 'Internal server error' });
   }

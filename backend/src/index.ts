@@ -5,6 +5,8 @@ import authRoutes from './routes/auth.routes';
 import usersRoutes from './routes/users.routes';
 import tripsRoutes from './routes/trips.routes';
 import stopsRoutes from './routes/stops.routes';
+import citiesRoutes from './routes/cities.routes';
+import activitiesRoutes from './routes/activities.routes';
 
 dotenv.config();
 
@@ -19,6 +21,8 @@ app.use('/auth', authRoutes);
 app.use('/users', usersRoutes);
 app.use('/trips', tripsRoutes);
 app.use('/stops', stopsRoutes);
+app.use('/cities', citiesRoutes);
+app.use('/activities', activitiesRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

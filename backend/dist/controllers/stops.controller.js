@@ -13,6 +13,11 @@ const updateStopSchema = zod_1.z.object({
     endDate: zod_1.z.string().datetime().optional(),
     orderIndex: zod_1.z.number().int().optional(),
 });
+const addActivitySchema = zod_1.z.object({
+    activityId: zod_1.z.string().uuid('Invalid activity ID'),
+    dayNumber: zod_1.z.number().int().optional(),
+    timeSlot: zod_1.z.string().optional(),
+});
 const createStop = async (req, res) => {
     try {
         if (!req.user)
@@ -31,7 +36,7 @@ const createStop = async (req, res) => {
             return res.status(404).json({ message: 'City not found' });
         }
         const maxOrderIndex = trip.stops.length > 0
-            ? Math.max(...trip.stops.map(s => s.orderIndex))
+            ? Math.max(...trip.stops.map((s) => s.orderIndex))
             : 0;
         const stop = await prisma_1.prisma.stop.create({
             data: {
@@ -106,17 +111,12 @@ const deleteStop = async (req, res) => {
     }
 };
 exports.deleteStop = deleteStop;
-const assignActivitySchema = zod_1.z.object({
-    activityId: zod_1.z.string().uuid('Invalid activity ID'),
-    dayNumber: zod_1.z.number().int().optional(),
-    timeSlot: zod_1.z.string().optional(),
-});
 const addActivityToStop = async (req, res) => {
     try {
         if (!req.user)
             return res.status(401).json({ message: 'Unauthorized' });
-        const { id } = req.params; // id is stopId
-        const data = assignActivitySchema.parse(req.body);
+        const { id } = req.params;
+        const data = addActivitySchema.parse(req.body);
         const stop = await prisma_1.prisma.stop.findUnique({
             where: { id },
             include: { trip: true },
@@ -156,13 +156,15 @@ const removeActivityFromStop = async (req, res) => {
         if (!stop || stop.trip.userId !== req.user.id) {
             return res.status(404).json({ message: 'Stop not found' });
         }
-        // A stop could theoretically have the same activity added multiple times, 
-        // so we delete the specific StopActivity record. Wait, the route says 
-        // /stops/:id/activities/:activityId so it deletes all instances of that activity in the stop,
-        // or we delete just one? We'll delete Many.
-        await prisma_1.prisma.stopActivity.deleteMany({
-            where: { stopId: id, activityId: activityId }
+        // Delete by stopId and activityId - wait, stopActivity doesn't have a compound unique key in schema
+        // Let's delete the first one that matches
+        const stopActivity = await prisma_1.prisma.stopActivity.findFirst({
+            where: { stopId: id, activityId }
         });
+        if (!stopActivity) {
+            return res.status(404).json({ message: 'Activity not found in this stop' });
+        }
+        await prisma_1.prisma.stopActivity.delete({ where: { id: stopActivity.id } });
         return res.status(200).json({ message: 'Activity removed from stop' });
     }
     catch (error) {

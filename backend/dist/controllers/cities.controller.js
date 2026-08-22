@@ -5,18 +5,18 @@ const prisma_1 = require("../utils/prisma");
 const searchCities = async (req, res) => {
     try {
         const { search } = req.query;
-        if (!search || typeof search !== 'string') {
-            const allCities = await prisma_1.prisma.city.findMany({ take: 20 });
-            return res.status(200).json(allCities);
-        }
-        const cities = await prisma_1.prisma.city.findMany({
-            where: {
+        let whereClause = {};
+        if (typeof search === 'string' && search.trim().length > 0) {
+            whereClause = {
                 OR: [
                     { name: { contains: search, mode: 'insensitive' } },
                     { country: { contains: search, mode: 'insensitive' } }
                 ]
-            },
-            take: 20
+            };
+        }
+        const cities = await prisma_1.prisma.city.findMany({
+            where: whereClause,
+            take: 20, // limit results
         });
         return res.status(200).json(cities);
     }
