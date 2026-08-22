@@ -15,4 +15,6 @@ router.patch('/:id', trips_controller_1.updateTrip);
 router.delete('/:id', trips_controller_1.deleteTrip);
 router.post('/:tripId/stops', stops_controller_1.createStop);
 router.post('/:tripId/generate-itinerary', ai_controller_1.generateItinerary);
+router.get('/:tripId/budget', trips_controller_1.getTripBudget);
+router.patch('/:id/publish', trips_controller_1.publishTrip);
 exports.default = router;

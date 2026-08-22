@@ -143,3 +143,92 @@ export const deleteTrip = async (req: AuthRequest, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 };
+
+export const getTripBudget = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+    const { tripId } = req.params as { tripId: string };
+
+    const trip = await prisma.trip.findUnique({
+      where: { id: tripId },
+      include: {
+        stops: {
+          include: {
+            city: true,
+            activities: {
+              include: { activity: true }
+            }
+          }
+        }
+      }
+    });
+
+    if (!trip || trip.userId !== req.user.id) {
+      return res.status(404).json({ message: 'Trip not found' });
+    }
+
+    let totalCost = 0;
+    const byCategoryMap: Record<string, number> = {};
+    const byStop: any[] = [];
+
+    for (const stop of trip.stops) {
+      let stopTotal = 0;
+      for (const sa of stop.activities) {
+        const cost = sa.activity.cost || 0;
+        totalCost += cost;
+        stopTotal += cost;
+        
+        const cat = sa.activity.category;
+        byCategoryMap[cat] = (byCategoryMap[cat] || 0) + cost;
+      }
+      
+      byStop.push({
+        stopId: stop.id,
+        cityName: stop.city.name,
+        total: stopTotal
+      });
+    }
+
+    const byCategory = Object.keys(byCategoryMap).map(key => ({
+      category: key,
+      total: byCategoryMap[key]
+    }));
+
+    return res.status(200).json({ totalCost, byCategory, byStop });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};
+
+export const publishTrip = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ message: 'Unauthorized' });
+    const { id } = req.params as { id: string };
+
+    const trip = await prisma.trip.findUnique({ where: { id } });
+    if (!trip || trip.userId !== req.user.id) {
+      return res.status(404).json({ message: 'Trip not found' });
+    }
+
+    let slug = trip.publicSlug;
+    if (!slug) {
+      // Generate a simple unique slug
+      slug = trip.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Math.random().toString(36).substring(2, 8);
+    }
+
+    const updatedTrip = await prisma.trip.update({
+      where: { id },
+      data: {
+        isPublic: true,
+        publicSlug: slug
+      }
+    });
+
+    return res.status(200).json({ 
+      message: 'Trip published successfully',
+      publicSlug: updatedTrip.publicSlug 
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+};

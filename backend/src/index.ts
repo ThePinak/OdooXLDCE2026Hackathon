@@ -7,6 +7,7 @@ import tripsRoutes from './routes/trips.routes';
 import stopsRoutes from './routes/stops.routes';
 import citiesRoutes from './routes/cities.routes';
 import activitiesRoutes from './routes/activities.routes';
+import shareRoutes from './routes/share.routes';
 
 dotenv.config();
 
@@ -23,6 +24,7 @@ app.use('/trips', tripsRoutes);
 app.use('/stops', stopsRoutes);
 app.use('/cities', citiesRoutes);
 app.use('/activities', activitiesRoutes);
+app.use('/share', shareRoutes);
 
 // Health check
 app.get('/health', (req, res) => {

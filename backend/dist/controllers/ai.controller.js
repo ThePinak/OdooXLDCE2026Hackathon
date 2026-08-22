@@ -33,7 +33,7 @@ const generateItinerary = async (req, res) => {
         // Fallback: If using Groq (OpenAI compatible), you could use the openai package with groq base url.
         const genAI = new generative_ai_1.GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({
-            model: 'gemini-1.5-flash',
+            model: 'gemini-3.6-flash',
             generationConfig: { responseMimeType: 'application/json' }
         });
         const systemInstruction = `
@@ -45,10 +45,10 @@ const generateItinerary = async (req, res) => {
       Distribute the total ${durationDays} days across the chosen cities using 'dayCount'.
       
       Available Cities:
-      ${JSON.stringify(cities.map(c => ({ id: c.id, name: c.name, country: c.country })))}
+      ${JSON.stringify(cities.map((c) => ({ id: c.id, name: c.name, country: c.country })))}
 
       Available Activities:
-      ${JSON.stringify(activities.map(a => ({ id: a.id, name: a.name, cityId: a.cityId, category: a.category })))}
+      ${JSON.stringify(activities.map((a) => ({ id: a.id, name: a.name, cityId: a.cityId, category: a.category })))}
 
       Return a strict JSON object with this exact shape:
       {
