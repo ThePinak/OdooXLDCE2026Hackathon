@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { createTrip, getTrips, getTripById, updateTrip, deleteTrip } from '../controllers/trips.controller';
 import { createStop } from '../controllers/stops.controller';
+import { generateItinerary } from '../controllers/ai.controller';
 import { authenticateToken } from '../middlewares/auth.middleware';
 
 const router = Router();
@@ -14,5 +15,6 @@ router.get('/:id', getTripById as any);
 router.patch('/:id', updateTrip as any);
 router.delete('/:id', deleteTrip as any);
 router.post('/:tripId/stops', createStop as any);
+router.post('/:tripId/generate-itinerary', generateItinerary as any);
 
 export default router;

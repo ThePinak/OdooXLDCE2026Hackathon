@@ -4,7 +4,7 @@ GlobeTrotter is a personalized, collaborative travel planning platform. It allow
 
 ## Current Progress
 
-**Phase 1, 2, & 3 Complete (Backend)**
+**Phase 1, 2, 3, & 4 Complete (Backend)**
 - **Tech Stack Setup**: Node.js, Express, TypeScript, Prisma (v5), and PostgreSQL.
 - **Authentication**: JWT-based auth flows (Signup, Login, Get/Update Profile).
 - **Core CRUD**: Fully functional endpoints for creating and managing Trips and Stops.
@@ -12,9 +12,9 @@ GlobeTrotter is a personalized, collaborative travel planning platform. It allow
 - **Cities & Activities**: Implemented endpoints for searching cities and filtering activities.
 - **Itinerary Building**: Functional endpoints to assign/remove activities to specific stops (`StopActivity`).
 - **Data Seeding**: Automated script to seed database with major cities and categorized activities.
+- **AI Itinerary Generator**: Implemented `POST /trips/:tripId/generate-itinerary` using Google Gemini SDK (`gemini-3.6-flash`). Takes a user prompt, calculates trip duration, contextualizes database locations, forces strict JSON output, and automatically persists AI-generated Stops and StopActivities into the PostgreSQL database.
 
 ## Next Steps
-- Phase 4: Google Gemini AI integration for itinerary generation.
 - Phase 5: Budget aggregation and Public Trip Sharing.
 
 ## How to Run (Backend)
