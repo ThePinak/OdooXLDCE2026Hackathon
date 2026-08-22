@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String
+  trips        Trip[]
+  createdAt    DateTime @default(now())
+}
+
+model Trip {
+  id                  String   @id @default(uuid())
+  userId              String
+  user                User     @relation(fields: [userId], references: [id])
+  name                String
+  startDate           DateTime
+  endDate             DateTime
+  description         String?
+  coverImageUrl       String?
+  generatedFromPrompt String?
+  isPublic            Boolean  @default(false)
+  publicSlug          String?  @unique
+  stops               Stop[]
+  createdAt           DateTime @default(now())
+}
+
+model City {
+  id         String     @id @default(uuid())
+  name       String
+  country    String
+  costIndex  Int
+  imageUrl   String?
+  lat        Float?
+  lng        Float?
+  activities Activity[]
+  stops      Stop[]
+}
+
+model Stop {
+  id         String         @id @default(uuid())
+  tripId     String
+  trip       Trip           @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  cityId     String
+  city       City           @relation(fields: [cityId], references: [id])
+  startDate  DateTime
+  endDate    DateTime
+  orderIndex Int
+  activities StopActivity[]
+}
+
+model Activity {
+  id          String         @id @default(uuid())
+  cityId      String
+  city        City           @relation(fields: [cityId], references: [id])
+  name        String
+  category    String
+  cost        Int
+  duration    Int
+  imageUrl    String?
+  description String?
+  stops       StopActivity[]
+}
+
+model StopActivity {
+  id         String   @id @default(uuid())
+  stopId     String
+  stop       Stop     @relation(fields: [stopId], references: [id], onDelete: Cascade)
+  activityId String
+  activity   Activity @relation(fields: [activityId], references: [id])
+  dayNumber  Int?
+  timeSlot   String?
+}

@@ -1,0 +1,51 @@
+@baseUrl = http://localhost:3000
+@token = {{login.response.body.token}}
+@tripId = {{createTrip.response.body.id}}
+
+### 1. Health Check
+GET {{baseUrl}}/health
+
+### 2. Sign Up (Change email if running multiple times)
+POST {{baseUrl}}/auth/signup
+Content-Type: application/json
+
+{
+  "name": "Test User",
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 3. Login
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "test@example.com",
+  "password": "password123"
+}
+
+### 4. Get Current User Profile (Requires Token)
+GET {{baseUrl}}/users/me
+Authorization: Bearer {{token}}
+
+### 5. Create a Trip
+# @name createTrip
+POST {{baseUrl}}/trips
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Summer in Paris",
+  "startDate": "2026-07-01T00:00:00Z",
+  "endDate": "2026-07-15T00:00:00Z",
+  "description": "A wonderful trip to France."
+}
+
+### 6. Get My Trips
+GET {{baseUrl}}/trips
+Authorization: Bearer {{token}}
+
+### 7. Get Specific Trip
+GET {{baseUrl}}/trips/{{tripId}}
+Authorization: Bearer {{token}}

@@ -1,0 +1,9 @@
+# Ignore planning and documentation files meant for local reference only
+GlobeTrotter_SRS.md
+GlobeTrotter_Backend_Prompts*.md
+
+
+# Node modules and environment variables
+node_modules/
+.env
+.DS_Store
